@@ -1,0 +1,135 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduSync Pro - Advanced Student Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    
+</head>
+<body class="text-gray-200">
+    <div class="container mx-auto p-4">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold mb-2 text-indigo-300">EduSync Pro</h1>
+            <p class="text-xl text-indigo-200">Your Advanced Academic Companion</p>
+        </header>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <section id="dashboard" class="glass p-6 rounded-lg col-span-full">
+                <h2 class="text-2xl font-semibold mb-4">Dashboard</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-indigo-600 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold">Total Study Time</h3>
+                        <p id="total-study-time" class="text-3xl font-bold">0h 0m</p>
+                    </div>
+                    <div class="bg-green-600 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold">Goals Completed</h3>
+                        <p id="goals-completed" class="text-3xl font-bold">0</p>
+                    </div>
+                    <div class="bg-yellow-600 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold">Upcoming Deadlines</h3>
+                        <p id="upcoming-deadlines" class="text-3xl font-bold">0</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="calendar" class="glass p-6 rounded-lg col-span-full">
+                <h2 class="text-2xl font-semibold mb-4">Academic Calendar</h2>
+                <div id="full-calendar"></div>
+            </section>
+
+            <section id="timetable" class="glass p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4">Smart Timetable</h2>
+                <div class="mb-4">
+                    <input type="text" id="subject-input" placeholder="Subject" class="w-full p-2 mb-2 rounded bg-gray-700 text-white placeholder-gray-400">
+                    <input type="text" id="teacher-input" placeholder="Teacher" class="w-full p-2 mb-2 rounded bg-gray-700 text-white placeholder-gray-400">
+                    <select id="day-select" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+                        <option value="">Select Day</option>
+                        <option value="monday">Monday</option>
+                        <option value="tuesday">Tuesday</option>
+                        <option value="wednesday">Wednesday</option>
+                        <option value="thursday">Thursday</option>
+                        <option value="friday">Friday</option>
+                        <option value="saturday">Saturday</option>
+                        <option value="sunday">Sunday</option>
+                    </select>
+                    <input type="time" id="time-input" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+                    <button onclick="addTimetableSlot()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300">Add to Timetable</button>
+                </div>
+                <div id="timetable-display" class="custom-scrollbar overflow-y-auto max-h-64"></div>
+            </section>
+            
+            <section id="study-tracker" class="glass p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4">Advanced Study Tracker</h2>
+                <div id="stopwatch" class="text-4xl font-bold mb-4 text-center">00:00:00</div>
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <button onclick="startStopwatch()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">Start</button>
+                    <button onclick="pauseStopwatch()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition duration-300">Pause</button>
+                    <button onclick="resetStopwatch()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">Reset</button>
+                </div>
+                <input type="text" id="study-subject" placeholder="Subject Studied" class="w-full p-2 mb-2 rounded bg-gray-700 text-white placeholder-gray-400">
+                <button onclick="logStudySession()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300">Log Study Session</button>
+                <div id="study-log" class="mt-4 custom-scrollbar overflow-y-auto max-h-48"></div>
+            </section>
+            
+            <section id="performance" class="glass p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4">Performance Analytics</h2>
+                <canvas id="performance-chart"></canvas>
+            </section>
+            
+            <section id="goals" class="glass p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4">Smart Goals</h2>
+                <input type="text" id="goal-input" placeholder="Enter your study goal" class="w-full p-2 mb-2 rounded bg-gray-700 text-white placeholder-gray-400">
+                <input type="date" id="goal-date" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+                <button onclick="addGoal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300">Add Goal</button>
+                <div id="goals-list" class="mt-4 custom-scrollbar overflow-y-auto max-h-48"></div>
+            </section>
+            
+            <section id="pomodoro" class="glass p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4">Pomodoro Technique</h2>
+                <div id="pomodoro-timer" class="text-4xl font-bold mb-4 text-center">25:00</div>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <button onclick="startPomodoro()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">Start</button>
+                    <button onclick="resetPomodoro()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">Reset</button>
+                </div>
+                <div id="pomodoro-status" class="text-center"></div>
+                <div class="mt-4">
+                    <label for="work-duration">Work Duration (minutes):</label>
+                    <input type="number" id="work-duration" value="25" min="1" max="60" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+                    <label for="break-duration">Break Duration (minutes):</label>
+                    <input type="number" id="break-duration" value="5" min="1" max="30" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+                </div>
+            </section>
+            
+            <section id="notes" class="glass p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4">Smart Notes</h2>
+                <textarea id="notes-input" placeholder="Jot down your thoughts..." class="w-full p-2 mb-2 rounded bg-gray-700 text-white placeholder-gray-400 h-32"></textarea>
+                <button onclick="saveNote()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300">Save Note</button>
+                <div id="notes-list" class="mt-4 custom-scrollbar overflow-y-auto max-h-48"></div>
+            </section>
+
+            <section id="study-environment" class="glass p-6 rounded-lg col-span-full">
+                <h2 class="text-2xl font-semibold mb-4">3D Study Environment</h2>
+                <div id="study-environment-container"></div>
+            </section>
+
+            <section id="ai-tutor" class="glass p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4">AI Tutor</h2>
+                <div id="chat-messages" class="custom-scrollbar overflow-y-auto h-64 mb-4 p-2 bg-gray-800 rounded"></div>
+                <input type="text" id="user-input" placeholder="Ask your AI tutor..." class="w-full p-2 mb-2 rounded bg-gray-700 text-white placeholder-gray-400">
+                <button onclick="sendMessage()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300">Send</button>
+            </section>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
